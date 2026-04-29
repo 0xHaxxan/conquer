@@ -13,6 +13,9 @@ export const metadata: Metadata = {
     metadataBase: new URL('https://conquer-fragrance.com'),
     keywords: ['conquer fragrance', 'conquer', 'fragrance', 'no1 conquer', 'perfume'],
     applicationName: 'conquer',
+    verification: {
+        google: 'NJdIfDnK3TyZMlp14rr9rvGzpw0k9jGR9fhVkFzRfXQ',
+    },
     robots: {
         index: true,
         follow: true,
