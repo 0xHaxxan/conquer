@@ -36,7 +36,7 @@ const Header = () => {
                     {/* Logo */}
                     <Link href="/" className="shrink-0">
                         <div className="flex items-center gap-1">
-                            <Image src="/logo.svg" alt="conquer" width={120} height={40} />
+                            <Image src="/conquer.svg" alt="conquer" width={120} height={40} />
                         </div>
                     </Link>
 
