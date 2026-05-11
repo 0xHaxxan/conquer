@@ -40,8 +40,8 @@ const Newsletter = () => {
                             <h3 className="font-bold text-gray-900 mb-2">VISIT US</h3>
                             <p className="text-sm text-gray-600">
                                 Conquer Fragrance INC.<br />
-                                Pahartali<br />
-                                Chattogram - Bangladesh
+                                Yunusco City Centre, CDA Ave,<br />
+                                Chattogram 4000 - Bangladesh
                             </p>
                         </div>
                     </div>

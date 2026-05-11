@@ -1,11 +1,11 @@
 export const products = [
     {
         id: 1,
-        name: "JO MALONE VETIVER & GOLDEN VANILLA",
+        name: "Vampire Blood",
         category: "For Men",
         type: "Luminizing Clay",
-        price: 51.74,
-        image: "/products/product1.jpg",
+        price: 299,
+        image: "/products/vempire-blood.png",
         tag: "GENUINE",
         tagColor: "bg-purple-700",
         description: "A sophisticated blend of warm vetiver and golden vanilla, this fragrance captures the essence of modern masculinity. The rich, earthy notes of vetiver are perfectly balanced with the sweet warmth of vanilla, creating a scent that is both bold and inviting.",
@@ -107,7 +107,7 @@ export const bestSellers = [
         category: "For Men",
         type: "Luminizing Clay",
         price: 51.74,
-        image: "/products/best1.jpg",
+        image: "/products/vempire-blood.png",
         tag: "GENUINE",
         tagColor: "bg-purple-700",
         description: "Our best-selling men's fragrance, loved for its sophisticated blend of vetiver and vanilla. A timeless classic that never goes out of style.",
