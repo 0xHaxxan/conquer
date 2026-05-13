@@ -1,6 +1,17 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react"
+import {
+    createContext,
+    useContext,
+    useEffect,
+    useMemo,
+    useState,
+    ReactNode,
+} from "react"
+
+/* =========================
+   TYPES
+========================= */
 
 export interface Product {
     id: number
@@ -12,12 +23,14 @@ export interface Product {
     tag: string
     tagColor: string
     description?: string
-    size?: string
-    quantity?: number
+
+    // Product Options
+    size?: any
 }
 
 export interface CartItem extends Product {
     quantity: number
+    selectedSize?: string
 }
 
 export interface User {
@@ -26,6 +39,7 @@ export interface User {
     firstName: string
     lastName: string
     phone?: string
+
     address?: {
         street: string
         city: string
@@ -33,6 +47,7 @@ export interface User {
         zip: string
         country: string
     }
+
     orders?: Order[]
 }
 
@@ -42,181 +57,357 @@ export interface Order {
     status: "pending" | "processing" | "shipped" | "delivered"
     items: CartItem[]
     total: number
-    shippingAddress: User["address"]
+    shippingAddress?: User["address"]
 }
+
+/* =========================
+   CONTEXT TYPES
+========================= */
 
 interface StoreContextType {
     // Cart
     cart: CartItem[]
-    addToCart: (product: Product, quantity?: number) => void
+    addToCart: (
+        product: Product,
+        quantity?: number,
+        selectedSize?: string
+    ) => void
+
     removeFromCart: (productId: number) => void
-    updateCartQuantity: (productId: number, quantity: number) => void
+
+    updateCartQuantity: (
+        productId: number,
+        quantity: number
+    ) => void
+
+    updateCartSize: (
+        productId: number,
+        size: string
+    ) => void
+
     clearCart: () => void
+
     cartTotal: number
     cartCount: number
 
     // Wishlist
     wishlist: Product[]
+
     addToWishlist: (product: Product) => void
     removeFromWishlist: (productId: number) => void
     isInWishlist: (productId: number) => boolean
 
-    // User/Auth
+    // Auth
     user: User | null
     isAuthenticated: boolean
-    login: (email: string, password: string) => Promise<boolean>
-    register: (userData: Partial<User> & { password: string }) => Promise<boolean>
+
+    login: (
+        email: string,
+        password: string
+    ) => Promise<boolean>
+
+    register: (
+        userData: Partial<User> & {
+            password: string
+        }
+    ) => Promise<boolean>
+
     logout: () => void
-    updateUser: (userData: Partial<User>) => void
+
+    updateUser: (
+        userData: Partial<User>
+    ) => void
 }
 
-const StoreContext = createContext<StoreContextType | undefined>(undefined)
+/* =========================
+   STORAGE KEYS
+========================= */
 
-export function StoreProvider({ children }: { children: ReactNode }) {
+const STORAGE_KEYS = {
+    cart: "perfumeshop-cart",
+    wishlist: "perfumeshop-wishlist",
+    user: "perfumeshop-user",
+}
+
+/* =========================
+   CONTEXT
+========================= */
+
+const StoreContext = createContext<
+    StoreContextType | undefined
+>(undefined)
+
+/* =========================
+   PROVIDER
+========================= */
+
+export function StoreProvider({
+    children,
+}: {
+    children: ReactNode
+}) {
     const [cart, setCart] = useState<CartItem[]>([])
     const [wishlist, setWishlist] = useState<Product[]>([])
     const [user, setUser] = useState<User | null>(null)
 
-    // Load from localStorage on mount
-    useEffect(() => {
-        const savedCart = localStorage.getItem("perfumeshop-cart")
-        const savedWishlist = localStorage.getItem("perfumeshop-wishlist")
-        const savedUser = localStorage.getItem("perfumeshop-user")
+    /* =========================
+       LOAD STORAGE
+    ========================= */
 
-        if (savedCart) setCart(JSON.parse(savedCart))
-        if (savedWishlist) setWishlist(JSON.parse(savedWishlist))
-        if (savedUser) setUser(JSON.parse(savedUser))
+    useEffect(() => {
+        try {
+            const savedCart = localStorage.getItem(STORAGE_KEYS.cart)
+            const savedWishlist = localStorage.getItem(STORAGE_KEYS.wishlist)
+            const savedUser = localStorage.getItem(STORAGE_KEYS.user)
+
+            if (savedCart) {
+                setCart(JSON.parse(savedCart))
+            }
+
+            if (savedWishlist) {
+                setWishlist(JSON.parse(savedWishlist))
+            }
+
+            if (savedUser) {
+                setUser(JSON.parse(savedUser))
+            }
+        } catch (error) {
+            console.error("Storage load error:", error)
+        }
     }, [])
 
-    // Save to localStorage on changes
+    /* =========================
+       SAVE STORAGE
+    ========================= */
+
     useEffect(() => {
-        localStorage.setItem("perfumeshop-cart", JSON.stringify(cart))
+        localStorage.setItem(
+            STORAGE_KEYS.cart,
+            JSON.stringify(cart)
+        )
     }, [cart])
 
     useEffect(() => {
-        localStorage.setItem("perfumeshop-wishlist", JSON.stringify(wishlist))
+        localStorage.setItem(
+            STORAGE_KEYS.wishlist,
+            JSON.stringify(wishlist)
+        )
     }, [wishlist])
 
     useEffect(() => {
         if (user) {
-            localStorage.setItem("perfumeshop-user", JSON.stringify(user))
+            localStorage.setItem(
+                STORAGE_KEYS.user,
+                JSON.stringify(user)
+            )
         } else {
-            localStorage.removeItem("perfumeshop-user")
+            localStorage.removeItem(STORAGE_KEYS.user)
         }
     }, [user])
 
-    // Cart functions
-    const addToCart = (product: Product, quantity = 1) => {
+    /* =========================
+       CART FUNCTIONS
+    ========================= */
+
+    const addToCart = (
+        product: Product,
+        quantity = 1,
+        selectedSize?: string
+    ) => {
         setCart((prev) => {
-            const existing = prev.find((item) => item.id === product.id)
-            if (existing) {
+            const existingItem = prev.find(
+                (item) =>
+                    item.id === product.id &&
+                    item.selectedSize === selectedSize
+            )
+
+            // Existing Product
+            if (existingItem) {
                 return prev.map((item) =>
-                    item.id === product.id
-                        ? { ...item, quantity: item.quantity + quantity }
+                    item.id === product.id &&
+                        item.selectedSize === selectedSize
+                        ? {
+                            ...item,
+                            quantity:
+                                item.quantity + quantity,
+                        }
                         : item
                 )
             }
-            return [...prev, { ...product, quantity }]
+
+            // New Product
+            return [
+                ...prev,
+                {
+                    ...product,
+                    quantity,
+                    selectedSize,
+                },
+            ]
         })
     }
 
-    const removeFromCart = (productId: number) => {
-        setCart((prev) => prev.filter((item) => item.id !== productId))
+    const removeFromCart = (
+        productId: number
+    ) => {
+        setCart((prev) =>
+            prev.filter((item) => item.id !== productId)
+        )
     }
 
-    const updateCartQuantity = (productId: number, quantity: number) => {
+    const updateCartQuantity = (
+        productId: number,
+        quantity: number
+    ) => {
         if (quantity <= 0) {
             removeFromCart(productId)
             return
         }
+
         setCart((prev) =>
             prev.map((item) =>
-                item.id === productId ? { ...item, quantity } : item
+                item.id === productId
+                    ? {
+                        ...item,
+                        quantity,
+                    }
+                    : item
             )
         )
     }
 
-    const clearCart = () => setCart([])
+    // NEW SIZE UPDATE FUNCTION
+    const updateCartSize = (
+        productId: number,
+        size: string
+    ) => {
+        setCart((prev) =>
+            prev.map((item) =>
+                item.id === productId
+                    ? {
+                        ...item,
+                        selectedSize: size,
+                    }
+                    : item
+            )
+        )
+    }
 
-    const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
-    const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0)
+    const clearCart = () => {
+        setCart([])
+    }
 
-    // Wishlist functions
-    const addToWishlist = (product: Product) => {
+    /* =========================
+       CALCULATIONS
+    ========================= */
+
+    const cartTotal = useMemo(() => {
+        return cart.reduce(
+            (sum, item) =>
+                sum + item.price * item.quantity,
+            0
+        )
+    }, [cart])
+
+    const cartCount = useMemo(() => {
+        return cart.reduce(
+            (sum, item) => sum + item.quantity,
+            0
+        )
+    }, [cart])
+
+    /* =========================
+       WISHLIST
+    ========================= */
+
+    const addToWishlist = (
+        product: Product
+    ) => {
         setWishlist((prev) => {
-            if (prev.find((item) => item.id === product.id)) return prev
+            const exists = prev.some(
+                (item) => item.id === product.id
+            )
+
+            if (exists) return prev
+
             return [...prev, product]
         })
     }
 
-    const removeFromWishlist = (productId: number) => {
-        setWishlist((prev) => prev.filter((item) => item.id !== productId))
+    const removeFromWishlist = (
+        productId: number
+    ) => {
+        setWishlist((prev) =>
+            prev.filter((item) => item.id !== productId)
+        )
     }
 
-    const isInWishlist = (productId: number) => {
-        return wishlist.some((item) => item.id === productId)
+    const isInWishlist = (
+        productId: number
+    ) => {
+        return wishlist.some(
+            (item) => item.id === productId
+        )
     }
 
-    // Auth functions
-    const login = async (email: string, password: string): Promise<boolean> => {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+    /* =========================
+       AUTH
+    ========================= */
 
-        // For demo, accept any valid email/password combo
+    const login = async (
+        email: string,
+        password: string
+    ) => {
+        await new Promise((resolve) =>
+            setTimeout(resolve, 1000)
+        )
+
         if (email && password.length >= 6) {
             const mockUser: User = {
-                id: "user-1",
+                id: `user-${Date.now()}`,
                 email,
                 firstName: "John",
                 lastName: "Doe",
-                phone: "(555) 123-4567",
-                address: {
-                    street: "123 Main St",
-                    city: "New York",
-                    state: "NY",
-                    zip: "10001",
-                    country: "United States",
-                },
-                orders: [
-                    {
-                        id: "ORD-001",
-                        date: "2024-01-15",
-                        status: "delivered",
-                        items: [],
-                        total: 156.99,
-                        shippingAddress: {
-                            street: "123 Main St",
-                            city: "New York",
-                            state: "NY",
-                            zip: "10001",
-                            country: "United States",
-                        },
-                    },
-                ],
             }
+
             setUser(mockUser)
+
             return true
         }
+
         return false
     }
 
-    const register = async (userData: Partial<User> & { password: string }): Promise<boolean> => {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+    const register = async (
+        userData: Partial<User> & {
+            password: string
+        }
+    ) => {
+        await new Promise((resolve) =>
+            setTimeout(resolve, 1000)
+        )
 
-        if (userData.email && userData.password.length >= 6) {
+        if (
+            userData.email &&
+            userData.password.length >= 6
+        ) {
             const newUser: User = {
                 id: `user-${Date.now()}`,
                 email: userData.email,
-                firstName: userData.firstName || "",
-                lastName: userData.lastName || "",
+                firstName:
+                    userData.firstName || "",
+                lastName:
+                    userData.lastName || "",
                 phone: userData.phone,
                 address: userData.address,
                 orders: [],
             }
+
             setUser(newUser)
+
             return true
         }
+
         return false
     }
 
@@ -224,24 +415,43 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         setUser(null)
     }
 
-    const updateUser = (userData: Partial<User>) => {
-        setUser((prev) => (prev ? { ...prev, ...userData } : null))
+    const updateUser = (
+        userData: Partial<User>
+    ) => {
+        setUser((prev) =>
+            prev
+                ? {
+                    ...prev,
+                    ...userData,
+                }
+                : null
+        )
     }
+
+    /* =========================
+       PROVIDER
+    ========================= */
 
     return (
         <StoreContext.Provider
             value={{
+                // Cart
                 cart,
                 addToCart,
                 removeFromCart,
                 updateCartQuantity,
+                updateCartSize,
                 clearCart,
                 cartTotal,
                 cartCount,
+
+                // Wishlist
                 wishlist,
                 addToWishlist,
                 removeFromWishlist,
                 isInWishlist,
+
+                // User
                 user,
                 isAuthenticated: !!user,
                 login,
@@ -255,10 +465,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     )
 }
 
+/* =========================
+   HOOK
+========================= */
+
 export function useStore() {
     const context = useContext(StoreContext)
-    if (context === undefined) {
-        throw new Error("useStore must be used within a StoreProvider")
+
+    if (!context) {
+        throw new Error(
+            "useStore must be used within StoreProvider"
+        )
     }
+
     return context
 }

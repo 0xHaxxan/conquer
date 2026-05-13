@@ -3,13 +3,13 @@ export const products = [
         id: 1,
         name: "Vampire Blood",
         category: "For Men",
-        type: "Luminizing Clay",
+        type: "Euro Valey",
         price: 299,
         image: "/products/vempire-blood.png",
         tag: "GENUINE",
         tagColor: "bg-purple-700",
         description: "A sophisticated blend of warm vetiver and golden vanilla, this fragrance captures the essence of modern masculinity. The rich, earthy notes of vetiver are perfectly balanced with the sweet warmth of vanilla, creating a scent that is both bold and inviting.",
-        size: "100ml"
+        size: ['6ml', '12ml', '30ml', '50ml', '100ml']
     },
     {
         id: 2,

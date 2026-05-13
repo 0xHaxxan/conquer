@@ -5,7 +5,7 @@ import Link from "next/link";
 const categories = [
     {
         title: "WOMEN'S PERFUME",
-        image: "/categories/womens.jpg",
+        image: "/categories/womens.png",
         alt: "Women's Perfume",
         subtitle: "Shop Now",
     },
@@ -16,29 +16,11 @@ const categories = [
         subtitle: "Shop Now",
     },
     {
-        title: "HAIRCARE",
-        image: "/categories/haircare.jpg",
-        alt: "Haircare",
-        subtitle: "coming soon",
-    },
-    {
-        title: "SKINCARE",
-        image: "/categories/skincare.jpg",
-        alt: "Skincare",
-        subtitle: "coming soon",
-    },
-    {
-        title: "GIFT SETS",
-        image: "/categories/giftsets.jpg",
-        alt: "Gift Sets",
-        subtitle: "Shop Now",
-    },
-    {
-        title: "BEST SELLERS",
-        image: "/categories/bestsellers.jpg",
-        alt: "Best Sellers",
-        subtitle: "Shop Now",
-    },
+        title: "FRAGRANCE OIL",
+        image: "/categories/oils.jpg",
+        alt: "Fragrance Oil",
+        subtitle: "Luzi's Fragrance Oil",
+    }
 ];
 
 const Collection = () => {
@@ -88,7 +70,7 @@ const Collection = () => {
                             />
 
                             <div className="absolute bottom-4 left-4 z-20 text-white">
-                                <h3 className="text-xl font-bold">{item.title}</h3>
+                                <h3 className="text-xl font-semibold">{item.title}</h3>
                                 {item.subtitle && (
                                     <p className="text-sm">{item.subtitle}</p>
                                 )}

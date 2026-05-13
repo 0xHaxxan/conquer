@@ -22,13 +22,7 @@ export function ProductCard({
 
     return (
         <div className="group my-6">
-            <div className="relative bg-gray-50 aspect-square mb-3 overflow-hidden">
-                {/* Tag */}
-                <span
-                    className={`absolute top-2 left-2 ${product.tagColor} text-white text-[10px] px-2 py-0.5 z-10`}
-                >
-                    {product.tag}
-                </span>
+            <div className="relative aspect-square mb-3 overflow-hidden">
 
                 {/* Wishlist */}
                 <button
@@ -46,12 +40,12 @@ export function ProductCard({
 
                 {/* Image */}
                 <Link href={`/product/${product.id}`}>
-                    <div className="w-full h-full flex items-center justify-center p-4">
+                    <div className="w-full h-full flex items-center justify-center">
                         <Image
                             src={product.image}
                             alt={product.name}
-                            width={150}
-                            height={200}
+                            width={250}
+                            height={250}
                             className="object-contain max-h-full group-hover:scale-105 transition-transform duration-300"
                         />
                     </div>

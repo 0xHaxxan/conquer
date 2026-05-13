@@ -1,6 +1,5 @@
 import Link from "next/link"
 import { ProductCard } from "./ProductCard"
-import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Product, useStore } from "@/lib/store-context"
 
 export function ProductSection({
@@ -12,7 +11,7 @@ export function ProductSection({
     products: Product[]
     showShopMore?: boolean
 }) {
-    const { addToCart, addToWishlist, removeFromWishlist, isInWishlist } = useStore()
+    const { addToWishlist, removeFromWishlist, isInWishlist } = useStore()
 
     return (
         <section className="py-12 md:py-16">
@@ -27,7 +26,6 @@ export function ProductSection({
                             <ProductCard
                                 key={product.id}
                                 product={product}
-                                onAddToCart={() => addToCart(product)}
                                 onToggleWishlist={() => {
                                     if (isInWishlist(product.id)) {
                                         removeFromWishlist(product.id)

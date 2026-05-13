@@ -24,12 +24,17 @@ import { useStore } from "@/lib/store-context"
 import { getProductById, products } from "@/lib/products"
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params)
-    const { cart, addToCart, addToWishlist, removeFromWishlist, isInWishlist } = useStore()
+    const { cart, addToCart, addToWishlist, updateCartSize, updateCartQuantity, removeFromWishlist, isInWishlist } = useStore()
     const [quantity, setQuantity] = useState(1)
     const [activeTab, setActiveTab] = useState<"description" | "details" | "reviews">("description")
     const product: any = getProductById(parseInt(id))
+    const [selectedSize, setSelectedSize] = useState(
+        product.sizes?.[0] || ""
+    )
 
     const isInCart = cart.some(item => item.id === product.id)
+    const item: any = cart.find(item => item.id === product.id)
+
 
     if (!product) {
         return (
@@ -47,7 +52,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
     const inWishlist = isInWishlist(product.id)
 
     const handleAddToCart = () => {
-        addToCart(product, quantity)
+        addToCart(product, quantity, selectedSize)
     }
 
     const handleWishlistToggle = () => {
@@ -92,7 +97,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                                 className="object-contain p-8"
                             />
                         </div>
-                        <div className="grid grid-cols-4 gap-2">
+                        {/* <div className="grid grid-cols-4 gap-2">
                             {[1, 2, 3, 4].map((i) => (
                                 <div key={i} className="aspect-square bg-gray-50 rounded border-2 border-transparent hover:border-purple-700 cursor-pointer overflow-hidden">
                                     <Image
@@ -104,7 +109,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                                     />
                                 </div>
                             ))}
-                        </div>
+                        </div> */}
                     </div>
 
                     {/* Product Info */}
@@ -124,21 +129,31 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
                         {/* Price */}
                         <div className="mb-6">
-                            <p className="text-3xl font-bold text-gray-900">${product.price.toFixed(2)}</p>
-                            <p className="text-sm text-gray-500">or 4 interest-free payments of ${(product.price / 4).toFixed(2)} with Afterpay</p>
+                            <p className="text-3xl font-bold text-gray-900">৳ {product.price.toFixed(2)}</p>
                         </div>
 
                         {/* Size */}
-                        {product.size && (
+                        {Array.isArray(product?.size) && product.size.length > 0 && (
                             <div className="mb-6">
-                                <p className="text-sm font-medium text-gray-900 mb-2">Size: {product.size}</p>
-                                <div className="flex gap-2">
-                                    <button className="px-4 py-2 border-2 border-purple-700 text-purple-700 text-sm font-medium">
-                                        {product.size}
-                                    </button>
-                                    <button className="px-4 py-2 border border-gray-300 text-gray-700 text-sm hover:border-gray-400">
-                                        200ml
-                                    </button>
+                                <p className="text-sm font-medium text-gray-900 mb-2">
+                                    Size: {selectedSize || 0}
+                                </p>
+
+                                <div className="flex flex-wrap gap-2">
+                                    {product.size.map((size: string) => (
+                                        <button
+                                            type="button"
+                                            key={size}
+                                            onClick={() => setSelectedSize(size)}
+                                            className={`px-4 py-2 text-sm font-medium border transition rounded
+                    ${selectedSize === size
+                                                    ? "border-purple-700 bg-purple-700 text-white"
+                                                    : "border-gray-300 text-gray-700 hover:border-gray-400"
+                                                }`}
+                                        >
+                                            {size}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
                         )}
@@ -149,14 +164,14 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                             <div className="flex items-center gap-4">
                                 <div className="flex items-center border border-gray-300">
                                     <button
-                                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                        onClick={() => updateCartQuantity(item?.id, item?.quantity - 1)}
                                         className="w-10 h-10 flex items-center justify-center hover:bg-gray-50"
                                     >
                                         <Minus className="w-4 h-4" />
                                     </button>
-                                    <span className="w-12 text-center font-medium">{quantity}</span>
+                                    <span className="w-12 text-center font-medium">{item?.quantity || 1}</span>
                                     <button
-                                        onClick={() => setQuantity(quantity + 1)}
+                                        onClick={() => updateCartQuantity(item?.id, item?.quantity + 1)}
                                         className="w-10 h-10 flex items-center justify-center hover:bg-gray-50"
                                     >
                                         <Plus className="w-4 h-4" />
@@ -232,7 +247,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                                 )}
                                 {activeTab === "details" && (
                                     <ul className="space-y-2 text-gray-600">
-                                        <li><strong>Size:</strong> {product.size || "N/A"}</li>
+                                        <li><strong>Size:</strong> {selectedSize || 0}</li>
                                         <li><strong>Type:</strong> {product.type || product.category}</li>
                                         <li><strong>Category:</strong> {product.category}</li>
                                         <li><strong>SKU:</strong> PS-{product.id.toString().padStart(6, "0")}</li>

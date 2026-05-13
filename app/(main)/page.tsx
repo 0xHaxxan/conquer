@@ -12,8 +12,6 @@ import Collection from "@/components/home/Collection"
 import SaleBanner from "@/components/home/SaleBanner"
 import HeroSlider from "@/components/home/HeroSlider"
 import Promo from "@/components/home/Promo"
-import Header from "@/components/home/Header"
-import { ProductCard } from "@/components/import/ProductCard"
 import { ProductSection } from "@/components/import/ProductSection"
 
 
@@ -26,8 +24,6 @@ export default function HomePage() {
             <SaleBanner />
             <Collection />
             <ProductSection title="RECOMMENDED FOR YOU" products={products} showShopMore />
-            <ProductSection title="NEW ARRIVALS!" products={newArrivals} />
-            <Certificates />
             <ProductSection title="BEST SELLERS" products={bestSellers} />
             <Trust />
             <Newsletter />
